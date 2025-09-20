@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruvanta Technology - Calling Agents</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1f2937, #111827);
+      margin: 0;
+      padding: 0;
+      color: #f9fafb;
+    }
+
+    header {
+      background: #0f172a;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #38bdf8;
+    }
+    header p {
+      margin: 5px 0 0;
+      font-size: 1rem;
+      color: #9ca3af;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      color: #38bdf8;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input {
+      padding: 12px;
+      width: 100%;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 12px 20px;
+      background: #38bdf8;
+      color: #111827;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #0ea5e9;
+    }
+
+    pre {
+      margin-top: 20px;
+      padding: 15px;
+      background: #0f172a;
+      color: #22c55e;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 25px;
+      border-collapse: collapse;
+      background: #0f172a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background: #38bdf8;
+      color: #111827;
+    }
+    tr:nth-child(even) {
+      background: #1e293b;
+    }
+    tr:nth-child(odd) {
+      background: #0f172a;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ruvanta Technology</h1>
+    <p>📞 Calling Agents Dashboard</p>
+  </header>
+
+  <div class="container">
+    <h2>Make a Call</h2>
+
+    <!-- Input fields -->
+    <div class="form-group">
+      <label for="toNumber">To Number:</label>
+      <input type="text" id="toNumber" placeholder="+91..." />
+    </div>
+    <div class="form-group">
+      <label for="fromNumberId">From Number ID:</label>
+      <input type="number" id="fromNumberId" placeholder="Enter From Number ID" />
+    </div>
+    <div class="form-group">
+      <label for="customerName">Customer Name:</label>
+      <input type="text" id="customerName" placeholder="Enter Customer Name" />
+    </div>
+
+    <button onclick="makeCall()">🚀 Dispatch Call</button>
+
+    <pre id="responseBox">Waiting for response...</pre>
+
+    <h2>📋 Transactions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Call ID</th>
+          <th>To</th>
+          <th>Customer</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="transactionsBody">
+        <!-- Dynamic rows -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    async function makeCall() {
+      const responseBox = document.getElementById("responseBox");
+      responseBox.textContent = "📡 Sending request...";
+
+      const toNumber = document.getElementById("toNumber").value;
+      const fromNumberId = document.getElementById("fromNumberId").value;
+      const customerName = document.getElementById("customerName").value;
+
+      if (!toNumber || !fromNumberId || !customerName) {
+        alert("⚠️ Please fill in all fields!");
+        return;
+      }
+
+      try {
+        const res = await fetch("https://backend.omnidim.io/api/v1/calls/dispatch", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer wu2rq5auZwgIuyJdr9KKfITCMyr9XFXGsuq7oDBIZVo",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            agent_id: 36957,
+            to_number: toNumber,
+            from_number_id: parseInt(fromNumberId),
+            call_context: {
+              customer_name: customerName,
+              account_id: 36957,
+              priority: "high"
+            }
+          })
+        });
+
+        const data = await res.json();
+        console.log("API Response:", data);
+        responseBox.textContent = JSON.stringify(data, null, 2);
+
+        addTransaction(data, customerName);
+      } catch (error) {
+        console.error("Error:", error);
+        responseBox.textContent = "❌ Error: " + error.message;
+      }
+    }
+
+    function addTransaction(call, customerName) {
+      const tbody = document.getElementById("transactionsBody");
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${call.id || "-"}</td>
+        <td>${call.to_number || "-"}</td>
+        <td>${customerName}</td>
+        <td>${call.status || "initiated"}</td>
+      `;
+      tbody.prepend(row);
+    }
+  </script>
+</body>
+</html>
